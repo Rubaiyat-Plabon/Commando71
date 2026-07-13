@@ -1,211 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commando71 - COMTAC</title>
+    <title>Commando 71 - Tactical Dashboard</title>
     <style>
         body {
-            background-color: #050505;
-            color: #00ff33;
+            background-color: #0b0f0c;
+            color: #4af626;
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
         }
-        .grid-layout {
+
+        h1, h2, h3 {
+            color: #55da35;
+            text-shadow: 0 0 5px rgba(74, 246, 38, 0.5);
+            text-transform: uppercase;
+        }
+        .dashboard-container {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 250px 1fr;
             gap: 20px;
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        .container {
-            border: 2px solid #00ff33;
-            box-shadow: 0 0 15px rgba(0, 255, 51, 0.4);
+        .sidebar {
+            background-color: #121813;
+            border: 2px solid #326922;
             padding: 20px;
-            background-color: #0a0a0a;
+            box-shadow: 0 0 10px rgba(50, 105, 34, 0.3);
         }
-        h2 {
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            border-bottom: 1px solid #00ff33;
-            padding-bottom: 10px;
-            margin-top: 0;
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
-        #chat-box {
-            height: 320px;
-            border: 1px solid #00ff33;
-            background-color: #000;
-            padding: 10px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-        .message { margin-bottom: 10px; padding: 5px; }
-        .incoming { color: #00ff33; }
-        .outgoing { color: #00bcff; text-align: right; }
-        .system { color: #ff3333; font-style: italic; }
-        
-        input[type="text"] {
-            width: 75%;
-            padding: 12px;
-            background-color: #000;
-            border: 1px solid #00ff33;
-            color: #00ff33;
-            font-family: inherit;
-        }
-        button {
-            width: 20%;
-            padding: 12px;
-            background-color: #00ff33;
-            color: #000;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: inherit;
-        }
-        button:hover { background-color: #00cc29; }
-        
-        /* রাইট প্যানেল ও এক্সট্রা এলিমেন্ট */
         .panel-box {
-            border: 1px dashed #00ff33;
-            padding: 15px;
-            margin-bottom: 15px;
-            background-color: #0d0d0d;
+            background-color: #121813;
+            border: 2px solid #326922;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(50, 105, 34, 0.3);
+            position: relative;
         }
-        .blink {
-            animation: blinker 1.5s linear infinite;
+        .panel-box::before {
+            content: "[ONLINE]";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px dashed #326922;
+            margin-bottom: 15px;
+        }
+        .status-active {
             color: #ff3333;
             font-weight: bold;
+            animation: blink 1.5s infinite;
         }
-        @keyframes blinker {
-            50% { opacity: 0; }
-        }
-        .destruct-btn {
-            width: 100%;
-            background-color: #ff3333;
-            color: white;
-            border: 1px solid #ff3333;
-            box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
-        }
-        .destruct-btn:hover { background-color: #cc0000; }
-        
-        .status-bar {
-            grid-column: span 2;
-            font-size: 12px;
-            border-top: 1px solid #00ff33;
-            padding-top: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        /* মোবাইল এবং ট্যাবলেটের জন্য রেসপনসিভ লেআউট */
-@media screen and (max-width: 768px) {
-    .dashboard-container, .main-layout, .grid-wrapper, body { 
-        display: flex;
-        flex-direction: column;
-        padding: 10px !important;
-    }
 
-    .sidebar, .card, .panel-box, .widget {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        margin-bottom: 15px !important;
-        box-sizing: border-box;
-    }
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .dashboard-container {
+                grid-template-columns: 1fr; 
+                gap: 15px;
+            }
 
-    h1 {
-        font-size: 1.8rem !important;
-        text-align: center;
-    }
-    
-    h2, h3 {
-        font-size: 1.3rem !important;
-    }
-}
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .sidebar, .panel-box {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            h1 {
+                font-size: 1.6rem;
+                text-align: center;
+            }
+            h2, h3 {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="grid-layout">
-    
-    <div class="container">
-        <h2>[ COMMANDO 71 : COMTAC ]</h2>
-        <div id="chat-box">
-            <div class="message system">SYSTEM: MESH NETWORK INITIALIZED // AES-256 ACTIVE.</div>
-            <div class="message incoming"><strong>HQ-BASE:</strong> Agent 01, LoRa signal test. Confirm transmission.</div>
-        </div>
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1>⚡ COMMANDO 71 TACTICAL INTERFACE ⚡</h1>
+        <p>SYSTEM STATUS: ACTIVE | SECURITY LEVEL: ALPHA</p>
+    </header>
 
-        <div style="display: flex; justify-content: space-between;">
-            <input type="text" id="msg-input" placeholder="Enter encrypted coms...">
-            <button onclick="sendMessage()">TRANSMIT</button>
-        </div>
-    </div>
-
-    <div class="container" style="display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div class="panel-box">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>SYS STATUS:</span>
-                    <span class="blink">● LIVE LINK</span>
-                </div>
-                <p style="margin: 5px 0 0 0; font-size: 13px;">Frequency: 433.0 MHz</p>
-                <p style="margin: 5px 0 0 0; font-size: 13px;">Hops Active: 02</p>
-            </div>
-
-            <div class="panel-box">
-                <span style="color: #00bcff;">SIGNAL METRICS:</span>
-                <pre style="margin: 5px 0 0 0; font-family: monospace; font-size: 12px; color: #00bcff;">
-|    /\
-|   /  \  /\
-|__/    \/  \/\_
-----------------</pre>
-                <span style="font-size: 11px;">RSSI: -72 dBm (STABLE)</span>
-            </div>
-        </div>
-
-        <button class="destruct-btn" onclick="triggerSelfDestruct()">SELF DESTRUCT</button>
-    </div>
-
-    <div class="status-bar">
-        <span>DEVICE: NODE-ALPHA</span>
-        <span>GPS: 23.8103° N, 90.4125° E</span>
-        <span>SYS-TIME: <span id="clock">00:00:00</span></span>
-    </div>
-
-</div>
-
-<script>
-    // ঘড়ি সচল করার লজিক
-    setInterval(() => {
-        const now = new Date();
-        document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
-    }, 1000);
-
-    function sendMessage() {
-        var input = document.getElementById('msg-input');
-        var chatBox = document.getElementById('chat-box');
+    <div class="dashboard-container">
         
-        if(input.value.trim() !== "") {
-            var msgDiv = document.createElement('div');
-            msgDiv.className = 'message outgoing';
-            msgDiv.innerHTML = '<strong>You:</strong> ' + input.value;
-            chatBox.appendChild(msgDiv);
-            
-            chatBox.scrollTop = chatBox.scrollHeight;
-            input.value = "";
-        }
-    }
+        <aside class="sidebar">
+            <h3>📂 NAVIGATION</h3>
+            <hr>
+            <p>🪖 > HQ COMMAND</p>
+            <p>🛰️ > SATELLITE</p>
+            <p>🔒 > ENCRYPTION</p>
+            <p>⚙️ > SETTINGS</p>
+        </aside>
 
-    // সেলফ ডেসট্রাক্ট ম্যাজিক লজিক
-    function triggerSelfDestruct() {
-        if(confirm("WARNING: Clear all tactical memory logs?")) {
-            document.getElementById('chat-box').innerHTML = "<div class='message system' style='color: #ff3333; text-align:center; font-size: 20px; font-weight:bold; margin-top: 100px;'>[ MEMORY WIPED COMPLETED ]</div>";
-            alert("Local storage and logs securely overwritten.");
-        }
-    }
-</script>
+        <main class="main-content">
+            
+            <div class="panel-box">
+                <h3>🎯 MISSION STATUS</h3>
+                <hr>
+                <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
+                <p><strong>THREAT LEVEL:</strong> <span class="status-active">CRITICAL</span></p>
+                <p><strong>TEAM CODE:</strong> ALPHA-71</p>
+            </div>
+
+            <div class="panel-box">
+                <h3>📜 SYSTEM LOGS</h3>
+                <hr>
+                <p>[23:00] Firewall operational.</p>
+                <p>[23:12] Uplink established with Bhawal base.</p>
+                <p>[23:25] Encrypted handshake successful.</p>
+            </div>
+
+            <div class="panel-box">
+                <h3>👥 SQUAD OVERVIEW</h3>
+                <hr>
+                <p>• Operator Plabon - <strong>READY</strong></p>
+                <p>• Operator Bon - <strong>MSS FIELD COORD</strong></p>
+                <p>• Support Unit - <strong>STANDBY</strong></p>
+            </div>
+
+        </main>
+    </div>
 
 </body>
 </html>
