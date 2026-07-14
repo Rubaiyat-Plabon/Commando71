@@ -7,13 +7,17 @@
     <!-- Ably CDN -->
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
+        /* ======================================================= */
+        /* 🌍 পিউর সিএসএস হাই-টেক রাডার ও সাইবার গ্রিড ব্যাকগ্রাউন্ড */
+        /* ======================================================= */
         body {
-            background-color: #050a05;
+            background-color: #040804;
+            /* মিলিটারি রাডার গ্রিড প্যাটার্ন (কোনো ইমেজের দরকার নেই) */
             background-image: 
-                radial-gradient(circle, rgba(16, 40, 16, 0.3) 0%, rgba(4, 8, 4, 0.95) 85%),
-                linear-gradient(rgba(74, 246, 38, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(74, 246, 38, 0.02) 1px, transparent 1px);
-            background-size: cover, 40px 40px, 40px 40px;
+                radial-gradient(circle at center, rgba(16, 45, 16, 0.4) 0%, #040804 85%),
+                linear-gradient(rgba(74, 246, 38, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(74, 246, 38, 0.03) 1px, transparent 1px);
+            background-size: cover, 35px 35px, 35px 35px;
             color: #4af626;
             font-family: 'Courier New', monospace;
             margin: 0;
@@ -22,32 +26,40 @@
             position: relative;
         }
 
+        /* ⚡ অনবরত চলমান গ্লোবাল রাডার ওয়েভ অ্যানিমেশন */
         body::before {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 200%; height: 100%;
-            background-image: url('https://pub-c5e31b5cdafb419a86617ddf3c34efd0.r2.dev/world-map-matrix.png');
-            background-size: contain;
-            background-repeat: repeat-x;
-            background-position: center;
-            opacity: 0.12;
+            top: 50%;
+            left: 50%;
+            width: 150vw;
+            height: 150vw;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, transparent 30%, rgba(74, 246, 38, 0.05) 40%, transparent 50%);
             z-index: -2;
-            animation: moveGlobalMap 45s linear infinite;
+            animation: radarPulse 10s linear infinite;
+            pointer-events: none;
         }
 
+        /* 📡 ওপর থেকে নিচে লাইভ ট্যাকটিক্যাল স্ক্যানার লাইন ইফেক্ট */
         body::after {
             content: "";
             position: fixed;
-            top: -100%; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(74, 246, 38, 0.08), transparent);
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(74, 246, 38, 0.12) 95%, rgba(74, 246, 38, 0.3) 100%, transparent);
             z-index: -1;
             pointer-events: none;
-            animation: radarScanner 6s linear infinite;
+            animation: radarScanner 5s linear infinite;
         }
 
-        @keyframes moveGlobalMap {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+        /* 🔄 অ্যানিমেশন এফেক্টস */
+        @keyframes radarPulse {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
 
         @keyframes radarScanner {
@@ -96,7 +108,7 @@
 
     <header>
         <h1>⚡ BASE COMMAND CONTROL STATION ⚡</h1>
-        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #888;">STATION OPERATOR: <strong>COMMANDER</strong></p>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #888;">STATION OPERATOR: <strong>COMMANDO</strong></p>
         <div id="live-clock" style="color: #ffff00; font-weight: bold; margin-top: 5px;">TIMESTAMP: LOADING...</div>
     </header>
 
@@ -107,29 +119,31 @@
             <hr>
             <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
             <p><strong>THREAT LEVEL:</strong> <span class="blink">CRITICAL</span></p>
-            <p><strong>TEAM CODE:</strong> FALCON-71</p>
+            <!-- 📍 জিপিএস লোকেশন অনুযায়ী এই সেক্টর ডাইনামিকালি পরিবর্তন হবে -->
+            <p><strong>SECTOR:</strong> <span id="current-sector" style="color: #ffff00; font-weight: bold;">LOCATING GPS...</span></p>
         </div>
 
-        <!-- 2. Active Agents (এখানে হার্ডওয়্যার বা নতুন এজেন্টরা ডাইনামিকালি যুক্ত হবে) -->
+        <!-- 2. Comms Node Fleet (সঠিক নাম ও অফলাইন এজেন্ট সমূহ) -->
         <div class="box">
             <h3>👥 Comms Node Fleet</h3>
             <hr>
             <div id="agent-list-container">
-                <!-- ডিফল্ট ব্যাকআপ বা অফলাইন ডিভাইস -->
-                <div class="agent-status"><span>• Operator Bon (MSS Coord)</span> <span class="online">● ONLINE</span></div>
+                <div class="agent-status"><span>• Commando (Base Controller)</span> <span class="online">● ONLINE</span></div>
                 <div class="agent-status" id="status-Agent-1"><span>• Agent-1 (Field Unit)</span> <span class="offline">○ OFFLINE</span></div>
+                <div class="agent-status"><span>• Agent-2 (Alpha)</span> <span class="offline">○ STANDBY</span></div>
+                <div class="agent-status"><span>• Agent-3 (Falcon)</span> <span class="offline">○ STANDBY</span></div>
+                <div class="agent-status"><span>• Agent-4 (Delta)</span> <span class="offline">○ STANDBY</span></div>
                 <div class="agent-status"><span>• ESP32_Node_Alpha</span> <span class="offline">○ STANDBY</span></div>
-                <div class="agent-status"><span>• GPS_Tracker_Beta</span> <span class="offline">○ STANDBY</span></div>
             </div>
         </div>
 
-        <!-- 3. System Health & Announcements -->
+        <!-- 3. System Health & Alerts -->
         <div class="box">
             <h3>🖥️ System Health & Alerts</h3>
             <hr>
             <p>💾 Main Core: 94% Operational</p>
             <p>📡 Uplink: SECURE (Dynamic Architecture Active)</p>
-            <p style="color: cyan;">📢 <strong>SYSTEM:</strong> Gateway ready for external Hardware / Node scaling.</p>
+            <p style="color: cyan;">📢 <strong>SYSTEM:</strong> GPS Geolocator modules initialized.</p>
         </div>
 
         <!-- 4. Incoming Live Messages & Incident Reports -->
@@ -166,35 +180,75 @@
             <div id="audit-logs">
                 <div class="log-entry">[00:01] Dashboard initialized.</div>
                 <div class="log-entry">[00:05] WebSocket scaling engine loaded.</div>
+                <div id="gps-log" class="log-entry" style="color: cyan;">[00:06] Requesting GPS coordinates...</div>
             </div>
         </div>
     </div>
 
     <script>
+        // লাইভ ঘড়ি
         function updateClock() {
             const now = new Date();
             document.getElementById('live-clock').innerText = `TIMESTAMP: ${now.toUTCString().replace('GMT', 'ZULU')}`;
         }
         setInterval(updateClock, 1000); updateClock();
 
+        // =======================================================
+        // 📍 জিপিএস ট্র্যাকিং ও ডাইনামিক প্লেস নেম ডিটেকশন
+        // =======================================================
+        function detectLocation() {
+            const sectorElement = document.getElementById('current-sector');
+            const gpsLog = document.getElementById('gps-log');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Locked: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+
+                        // Nominatim Reverse Geocoding API ব্যবহার করে জায়গার নাম বের করা
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
+                            .then(response => response.json())
+                            .then(data => {
+                                // শহর, মফস্বল বা বিভাগ ডিটেক্ট করা
+                                const city = data.address.city || data.address.town || data.address.village || data.address.state || "BHAWAL";
+                                sectorElement.innerText = `${city.toUpperCase()}-71`;
+                                gpsLog.innerText += ` | Sector Resolved: ${city.toUpperCase()}`;
+                            })
+                            .catch(() => {
+                                // নেটওয়ার্ক ফেইল করলে ডিফল্ট
+                                sectorElement.innerText = "BHAWAL-71";
+                            });
+                    },
+                    (error) => {
+                        // যদি ইউজার পারমিশন ডিনাই করে
+                        sectorElement.innerText = "BHAWAL-71 (GPS OFF)";
+                        gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Error: Permission Denied or Timeout.`;
+                    }
+                );
+            } else {
+                sectorElement.innerText = "BHAWAL-71 (NO GPS)";
+            }
+        }
+        // পেজ লোড হওয়া মাত্রই জিপিএস রান করো
+        detectLocation();
+
         // ======= ABLY REAL-TIME SETUP =======
         const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); // এখানে আপনার Ably API Key বসাবেন
         const channel = ably.channels.get('tactical-ops');
 
-        // ট্র্যাক রাখার জন্য একটা অবজেক্ট (কোন কোন মডিউল কানেক্টেড আছে)
         const connectedDevices = {};
 
-        // 📡 ডাইনামিক রিসিভার লজিক (যা হার্ডওয়্যার মডিউল ও নতুন এজেন্টদের অটো-কানেক্ট করবে)
+        // ডাইনামিক রিসিভার লজিক
         channel.subscribe('field-report', function(message) {
-            const data = message.data; // ডেটা পে-লোড (যেমন: data.agent, data.status, data.msg)
+            const data = message.data;
             const deviceName = data.agent; 
             const timestamp = new Date().toLocaleTimeString();
 
-            // ১. যদি ডিভাইসটি একদম নতুন হয় (যেমন কোনো নতুন ESP32 বা Agent-5), তাকে তালিকায় স্বয়ংক্রিয়ভাবে যোগ করো
             if (!connectedDevices[deviceName]) {
                 connectedDevices[deviceName] = true;
-                
-                // যদি লিস্টে আগে থেকেই অফলাইন হিসেবে থাকে, তবে সেটা আপডেট করো, নয়তো নতুন তৈরি করো
                 const existingStatusBox = document.getElementById(`status-${deviceName.replace(/\s+/g, '')}`);
                 if (existingStatusBox) {
                     existingStatusBox.innerHTML = `<span>• ${deviceName}</span> <span class="online">● ONLINE</span>`;
@@ -206,15 +260,8 @@
                     newDeviceRow.innerHTML = `<span>• ${deviceName} (Auto-Detected)</span> <span class="online">● ONLINE</span>`;
                     listContainer.insertBefore(newDeviceRow, listContainer.firstChild);
                 }
-            } else {
-                // অলরেডি কানেক্টেড থাকলে জাস্ট তার স্ট্যাটাস অনলাইন এনসিওর করো
-                const statusBox = document.getElementById(`status-${deviceName.replace(/\s+/g, '')}`);
-                if (statusBox) {
-                    statusBox.innerHTML = `<span>• ${deviceName}</span> <span class="online">● ONLINE</span>`;
-                }
             }
 
-            // ২. ফিডে মেসেজ/হার্ডওয়্যার ডেটা পুশ করা
             const feed = document.getElementById('incident-feed');
             const newReport = document.createElement('div');
             newReport.className = 'log-entry';
@@ -222,7 +269,6 @@
             newReport.innerHTML = `<strong>[${timestamp}] FROM ${deviceName}:</strong> Status: ${data.status} | Data/Msg: "${data.msg}"`;
             feed.insertBefore(newReport, feed.firstChild);
 
-            // ৩. অডিট লগ আপডেট
             const audit = document.getElementById('audit-logs');
             const newAudit = document.createElement('div');
             newAudit.className = 'log-entry';
