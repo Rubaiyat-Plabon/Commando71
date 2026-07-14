@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Command Dashboard</title>
-    <!-- Ably CDN -->
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
         /* ======================================================= */
@@ -12,7 +11,6 @@
         /* ======================================================= */
         body {
             background-color: #040804;
-            /* মিলিটারি রাডার গ্রিড প্যাটার্ন (কোনো ইমেজের দরকার নেই) */
             background-image: 
                 radial-gradient(circle at center, rgba(16, 45, 16, 0.4) 0%, #040804 85%),
                 linear-gradient(rgba(74, 246, 38, 0.03) 1px, transparent 1px),
@@ -26,46 +24,24 @@
             position: relative;
         }
 
-        /* ⚡ অনবরত চলমান গ্লোবাল রাডার ওয়েভ অ্যানিমেশন */
         body::before {
-            content: "";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 150vw;
-            height: 150vw;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, transparent 30%, rgba(74, 246, 38, 0.05) 40%, transparent 50%);
-            z-index: -2;
-            animation: radarPulse 10s linear infinite;
-            pointer-events: none;
+            content: ""; position: fixed; top: 50%; left: 50%; width: 150vw; height: 150vw;
+            transform: translate(-50%, -50%); background: radial-gradient(circle, transparent 30%, rgba(74, 246, 38, 0.05) 40%, transparent 50%);
+            z-index: -2; animation: radarPulse 10s linear infinite; pointer-events: none;
         }
 
-        /* 📡 ওপর থেকে নিচে লাইভ ট্যাকটিক্যাল স্ক্যানার লাইন ইফেক্ট */
         body::after {
-            content: "";
-            position: fixed;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            content: ""; position: fixed; top: -100%; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, transparent, rgba(74, 246, 38, 0.12) 95%, rgba(74, 246, 38, 0.3) 100%, transparent);
-            z-index: -1;
-            pointer-events: none;
-            animation: radarScanner 5s linear infinite;
+            z-index: -1; pointer-events: none; animation: radarScanner 5s linear infinite;
         }
 
-        /* 🔄 অ্যানিমেশন এফেক্টস */
         @keyframes radarPulse {
             0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
             50% { opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
-
-        @keyframes radarScanner {
-            0% { top: -100%; }
-            100% { top: 100%; }
-        }
+        @keyframes radarScanner { 0% { top: -100%; } 100% { top: 100%; } }
 
         h1, h2, h3 { color: #55da35; margin-top: 0; text-shadow: 0 0 8px rgba(74, 246, 38, 0.6); }
         header { 
@@ -73,26 +49,20 @@
             border-bottom: 2px solid #326922; 
             padding-bottom: 10px; 
             margin-bottom: 20px; 
-            background: rgba(8, 14, 8, 0.85);
+            background: rgba(8, 14, 8, 0.85); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        
-        .box {
-            background-color: rgba(10, 18, 10, 0.82);
-            border: 2px solid #326922;
-            padding: 15px;
-            box-shadow: 0 0 15px rgba(50, 105, 34, 0.5);
-            height: 220px;
-            overflow-y: auto;
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .box { 
+            background-color: rgba(10, 18, 10, 0.82); 
+            border: 2px solid #326922; 
+            padding: 15px; 
+            box-shadow: 0 0 15px rgba(50, 105, 34, 0.5); 
+            height: 220px; 
+            overflow-y: auto; 
             backdrop-filter: blur(4px);
         }
-        
         .full-width { grid-column: span 3; height: auto; }
         hr { border: 0; border-top: 1px dashed #326922; margin: 10px 0; }
         .blink { animation: blinker 1.5s linear infinite; color: red; font-weight: bold; }
@@ -102,6 +72,11 @@
         .agent-status { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .online { color: #4af626; font-weight: bold; }
         .offline { color: #ff3333; }
+
+        /* 📡 নতুন কন্ট্রোল কমান্ড এরিয়া স্টাইল */
+        .control-input { background: #080e08; border: 1px solid #4af626; color: #4af626; padding: 8px; width: 60%; font-family: monospace; }
+        .control-btn { background: #102d10; border: 1px solid #4af626; color: #4af626; padding: 8px 15px; font-weight: bold; cursor: pointer; }
+        .control-btn:hover { background: #4af626; color: #040804; }
     </style>
 </head>
 <body>
@@ -113,17 +88,14 @@
     </header>
 
     <div class="grid-container">
-        <!-- 1. Mission Overview -->
         <div class="box">
             <h3>🎯 Mission Overview</h3>
             <hr>
             <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
             <p><strong>THREAT LEVEL:</strong> <span class="blink">CRITICAL</span></p>
-            <!-- 📍 জিপিএস লোকেশন অনুযায়ী এই সেক্টর ডাইনামিকালি পরিবর্তন হবে -->
             <p><strong>SECTOR:</strong> <span id="current-sector" style="color: #ffff00; font-weight: bold;">LOCATING GPS...</span></p>
         </div>
 
-        <!-- 2. Comms Node Fleet (সঠিক নাম ও অফলাইন এজেন্ট সমূহ) -->
         <div class="box">
             <h3>👥 Comms Node Fleet</h3>
             <hr>
@@ -137,25 +109,29 @@
             </div>
         </div>
 
-        <!-- 3. System Health & Alerts -->
         <div class="box">
             <h3>🖥️ System Health & Alerts</h3>
             <hr>
             <p>💾 Main Core: 94% Operational</p>
             <p>📡 Uplink: SECURE (Dynamic Architecture Active)</p>
-            <p style="color: cyan;">📢 <strong>SYSTEM:</strong> GPS Geolocator modules initialized.</p>
+            <p style="color: cyan;">📢 <strong>SYSTEM:</strong> Two-way Uplink Comms Engaged.</p>
         </div>
 
-        <!-- 4. Incoming Live Messages & Incident Reports -->
-        <div class="box full-width" style="height: 280px;">
+        <div class="box full-width" style="height: 360px;">
             <h3>🚨 Incoming Messages & Field Incident Reports</h3>
             <hr>
-            <div id="incident-feed">
+            <div id="incident-feed" style="height: 180px; overflow-y: auto; margin-bottom: 15px; border-bottom: 1px solid #326922;">
                 <div class="log-entry">[SYSTEM] Awaiting secure payloads from active field units or hardware modules...</div>
             </div>
+
+            <h3>📡 HQ Directive Control (Send Reply / Order)</h3>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                <input type="text" id="base-message" class="control-input" placeholder="Enter HQ command order or reply here...">
+                <button onclick="sendBaseDirective()" class="control-btn">⚡ TRANSMIT DIRECTIVE</button>
+            </div>
+            <span id="tx-status" style="font-size: 0.8rem; color: #ffff00; margin-top: 5px; display: block;"></span>
         </div>
 
-        <!-- 5. Task Management & Calendar -->
         <div class="box">
             <h3>📋 Task Management & Schedule</h3>
             <hr>
@@ -164,7 +140,6 @@
             <p>📅 <strong>Next Sync:</strong> 23:45 ZULU</p>
         </div>
 
-        <!-- 6. Secure File Library -->
         <div class="box">
             <h3>📁 Secure File Library</h3>
             <hr>
@@ -173,13 +148,11 @@
             <p>📄 coordination_briefing.pdf</p>
         </div>
 
-        <!-- 7. Audit Logs -->
         <div class="box">
             <h3>📜 System Audit Logs</h3>
             <hr>
             <div id="audit-logs">
                 <div class="log-entry">[00:01] Dashboard initialized.</div>
-                <div class="log-entry">[00:05] WebSocket scaling engine loaded.</div>
                 <div id="gps-log" class="log-entry" style="color: cyan;">[00:06] Requesting GPS coordinates...</div>
             </div>
         </div>
@@ -193,55 +166,33 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // =======================================================
-        // 📍 জিপিএস ট্র্যাকিং ও ডাইনামিক প্লেস নেম ডিটেকশন
-        // =======================================================
+        // জিপিএস ট্র্যাকার ও জোন মডিউলার ফিল্টার
         function detectLocation() {
             const sectorElement = document.getElementById('current-sector');
             const gpsLog = document.getElementById('gps-log');
-
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Locked: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-
-                        // Nominatim Reverse Geocoding API ব্যবহার করে জায়গার নাম বের করা
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
-                            .then(response => response.json())
-                            .then(data => {
-                                // শহর, মফস্বল বা বিভাগ ডিটেক্ট করা
-                                const city = data.address.city || data.address.town || data.address.village || data.address.state || "BHAWAL";
-                                sectorElement.innerText = `${city.toUpperCase()}-71`;
-                                gpsLog.innerText += ` | Sector Resolved: ${city.toUpperCase()}`;
-                            })
-                            .catch(() => {
-                                // নেটওয়ার্ক ফেইল করলে ডিফল্ট
-                                sectorElement.innerText = "BHAWAL-71";
-                            });
-                    },
-                    (error) => {
-                        // যদি ইউজার পারমিশন ডিনাই করে
-                        sectorElement.innerText = "BHAWAL-71 (GPS OFF)";
-                        gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Error: Permission Denied or Timeout.`;
-                    }
-                );
-            } else {
-                sectorElement.innerText = "BHAWAL-71 (NO GPS)";
-            }
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude; const lon = position.coords.longitude;
+                    gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Locked: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                    
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
+                        .then(response => response.json()).then(data => {
+                            const stateName = data.address.state || data.address.city || "DHAKA";
+                            const cleanName = stateName.replace(/[\s_]Division/i, "").toUpperCase();
+                            sectorElement.innerText = `${cleanName}-71`;
+                            gpsLog.innerText += ` | Sector Resolved: ${cleanName}`;
+                        }).catch(() => { sectorElement.innerText = "DHAKA-71"; });
+                }, () => { sectorElement.innerText = "DHAKA-71"; });
+            } else { sectorElement.innerText = "DHAKA-71"; }
         }
-        // পেজ লোড হওয়া মাত্রই জিপিএস রান করো
         detectLocation();
 
         // ======= ABLY REAL-TIME SETUP =======
-        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); // এখানে আপনার Ably API Key বসাবেন
+        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); // আপনার Ably API Key বসাবেন
         const channel = ably.channels.get('tactical-ops');
-
         const connectedDevices = {};
 
-        // ডাইনামিক রিসিভার লজিক
+        // ১. এজেন্টদের পাঠানো মেসেজ রিসিভ করা
         channel.subscribe('field-report', function(message) {
             const data = message.data;
             const deviceName = data.agent; 
@@ -252,13 +203,6 @@
                 const existingStatusBox = document.getElementById(`status-${deviceName.replace(/\s+/g, '')}`);
                 if (existingStatusBox) {
                     existingStatusBox.innerHTML = `<span>• ${deviceName}</span> <span class="online">● ONLINE</span>`;
-                } else {
-                    const listContainer = document.getElementById('agent-list-container');
-                    const newDeviceRow = document.createElement('div');
-                    newDeviceRow.className = 'agent-status';
-                    newDeviceRow.id = `status-${deviceName.replace(/\s+/g, '')}`;
-                    newDeviceRow.innerHTML = `<span>• ${deviceName} (Auto-Detected)</span> <span class="online">● ONLINE</span>`;
-                    listContainer.insertBefore(newDeviceRow, listContainer.firstChild);
                 }
             }
 
@@ -266,15 +210,40 @@
             const newReport = document.createElement('div');
             newReport.className = 'log-entry';
             newReport.style.color = '#ffff00';
-            newReport.innerHTML = `<strong>[${timestamp}] FROM ${deviceName}:</strong> Status: ${data.status} | Data/Msg: "${data.msg}"`;
+            newReport.innerHTML = `<strong>[${timestamp}] FROM ${deviceName}:</strong> Status: ${data.status} | Msg: "${data.msg}"`;
             feed.insertBefore(newReport, feed.firstChild);
-
-            const audit = document.getElementById('audit-logs');
-            const newAudit = document.createElement('div');
-            newAudit.className = 'log-entry';
-            newAudit.innerText = `[${timestamp}] IoT Payload parsed from node: ${deviceName}`;
-            audit.insertBefore(newAudit, audit.firstChild);
         });
+
+        // ২. বেস থেকে এজেন্টের উদ্দেশ্যে মেসেজ বা অর্ডার পাঠানো
+        function sendBaseDirective() {
+            const baseMsg = document.getElementById('base-message').value;
+            const txStatus = document.getElementById('tx-status');
+            if(!baseMsg) return;
+
+            txStatus.innerText = "BROADCASTING ORDER...";
+            
+            channel.publish('base-directive', {
+                commander: "Commando (Base Controller)",
+                order: baseMsg
+            }, function(err) {
+                if(err) {
+                    txStatus.innerText = "BROADCAST FAILED!";
+                    txStatus.style.color = "red";
+                } else {
+                    txStatus.innerText = "ORDER BROADCASTED SUCCESSFULLY [SECURE]";
+                    txStatus.style.color = "#4af626";
+                    
+                    const feed = document.getElementById('incident-feed');
+                    const myOrderLog = document.createElement('div');
+                    myOrderLog.className = 'log-entry';
+                    myOrderLog.style.color = 'cyan';
+                    myOrderLog.innerHTML = `<strong>[${new Date().toLocaleTimeString()}] SENT ORDER:</strong> "${baseMsg}"`;
+                    feed.insertBefore(myOrderLog, feed.firstChild);
+                    
+                    document.getElementById('base-message').value = "";
+                }
+            });
+        }
     </script>
 </body>
 </html>
