@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Command Dashboard</title>
+    <!-- Ably CDN -->
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        /* ======================================================= */
-        /* 🌍 পিউর সিএসএস হাই-টেক রাডার ও সাইবার গ্রিড ব্যাকগ্রাউন্ড */
-        /* ======================================================= */
         body {
             background-color: #040804;
             background-image: 
@@ -50,7 +48,6 @@
             padding-bottom: 10px; 
             margin-bottom: 20px; 
             background: rgba(8, 14, 8, 0.85); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -61,7 +58,6 @@
             box-shadow: 0 0 15px rgba(50, 105, 34, 0.5); 
             height: 220px; 
             overflow-y: auto; 
-            backdrop-filter: blur(4px);
         }
         .full-width { grid-column: span 3; height: auto; }
         hr { border: 0; border-top: 1px dashed #326922; margin: 10px 0; }
@@ -73,7 +69,6 @@
         .online { color: #4af626; font-weight: bold; }
         .offline { color: #ff3333; }
 
-        /* 📡 নতুন কন্ট্রোল কমান্ড এরিয়া স্টাইল */
         .control-input { background: #080e08; border: 1px solid #4af626; color: #4af626; padding: 8px; width: 60%; font-family: monospace; }
         .control-btn { background: #102d10; border: 1px solid #4af626; color: #4af626; padding: 8px 15px; font-weight: bold; cursor: pointer; }
         .control-btn:hover { background: #4af626; color: #040804; }
@@ -88,6 +83,7 @@
     </header>
 
     <div class="grid-container">
+        <!-- 1. Mission Overview -->
         <div class="box">
             <h3>🎯 Mission Overview</h3>
             <hr>
@@ -96,6 +92,7 @@
             <p><strong>SECTOR:</strong> <span id="current-sector" style="color: #ffff00; font-weight: bold;">LOCATING GPS...</span></p>
         </div>
 
+        <!-- 2. Comms Node Fleet -->
         <div class="box">
             <h3>👥 Comms Node Fleet</h3>
             <hr>
@@ -109,21 +106,24 @@
             </div>
         </div>
 
+        <!-- 3. System Health -->
         <div class="box">
             <h3>🖥️ System Health & Alerts</h3>
             <hr>
             <p>💾 Main Core: 94% Operational</p>
-            <p>📡 Uplink: SECURE (Dynamic Architecture Active)</p>
-            <p style="color: cyan;">📢 <strong>SYSTEM:</strong> Two-way Uplink Comms Engaged.</p>
+            <p>📡 Uplink: SECURE</p>
+            <p style="color: cyan;">📢 Two-way Uplink Comms Engaged.</p>
         </div>
 
+        <!-- 4. Message Feed & Send Option -->
         <div class="box full-width" style="height: 360px;">
             <h3>🚨 Incoming Messages & Field Incident Reports</h3>
             <hr>
             <div id="incident-feed" style="height: 180px; overflow-y: auto; margin-bottom: 15px; border-bottom: 1px solid #326922;">
-                <div class="log-entry">[SYSTEM] Awaiting secure payloads from active field units or hardware modules...</div>
+                <div class="log-entry">[SYSTEM] Awaiting secure payloads...</div>
             </div>
 
+            <!-- 📡 এই এরিয়াটাই আপনার ইনপুট বক্স এবং বাটন তৈরি করবে -->
             <h3>📡 HQ Directive Control (Send Reply / Order)</h3>
             <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
                 <input type="text" id="base-message" class="control-input" placeholder="Enter HQ command order or reply here...">
@@ -132,41 +132,40 @@
             <span id="tx-status" style="font-size: 0.8rem; color: #ffff00; margin-top: 5px; display: block;"></span>
         </div>
 
+        <!-- 5. Task Management -->
         <div class="box">
             <h3>📋 Task Management & Schedule</h3>
             <hr>
-            <p>[ ] Decrypt Falcon Packet (Priority 1)</p>
+            <p>[ ] Decrypt Falcon Packet</p>
             <p>[ ] Sync logs with Bhawal Base</p>
-            <p>📅 <strong>Next Sync:</strong> 23:45 ZULU</p>
         </div>
 
+        <!-- 6. File Library -->
         <div class="box">
             <h3>📁 Secure File Library</h3>
             <hr>
             <p>📄 falcon_tactical_map.enc</p>
             <p>📄 hardware_api_endpoint.json</p>
-            <p>📄 coordination_briefing.pdf</p>
         </div>
 
+        <!-- 7. Audit Logs -->
         <div class="box">
             <h3>📜 System Audit Logs</h3>
             <hr>
             <div id="audit-logs">
                 <div class="log-entry">[00:01] Dashboard initialized.</div>
-                <div id="gps-log" class="log-entry" style="color: cyan;">[00:06] Requesting GPS coordinates...</div>
+                <div id="gps-log" class="log-entry" style="color: cyan;">[00:06] Tracking GPS...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // লাইভ ঘড়ি
         function updateClock() {
             const now = new Date();
             document.getElementById('live-clock').innerText = `TIMESTAMP: ${now.toUTCString().replace('GMT', 'ZULU')}`;
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // জিপিএস ট্র্যাকার ও জোন মডিউলার ফিল্টার
         function detectLocation() {
             const sectorElement = document.getElementById('current-sector');
             const gpsLog = document.getElementById('gps-log');
@@ -174,25 +173,23 @@
                 navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude; const lon = position.coords.longitude;
                     gpsLog.innerText = `[${new Date().toLocaleTimeString()}] GPS Locked: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-                    
                     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`)
                         .then(response => response.json()).then(data => {
                             const stateName = data.address.state || data.address.city || "DHAKA";
                             const cleanName = stateName.replace(/[\s_]Division/i, "").toUpperCase();
                             sectorElement.innerText = `${cleanName}-71`;
-                            gpsLog.innerText += ` | Sector Resolved: ${cleanName}`;
                         }).catch(() => { sectorElement.innerText = "DHAKA-71"; });
                 }, () => { sectorElement.innerText = "DHAKA-71"; });
             } else { sectorElement.innerText = "DHAKA-71"; }
         }
         detectLocation();
 
-        // ======= ABLY REAL-TIME SETUP =======
-        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); // আপনার Ably API Key বসাবেন
+        // Ably কানেকশন (এখানে আপনার অরিজিনাল কী বসাবেন)
+        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); 
         const channel = ably.channels.get('tactical-ops');
         const connectedDevices = {};
 
-        // ১. এজেন্টদের পাঠানো মেসেজ রিসিভ করা
+        // এজেন্ট থেকে আসা মেসেজ রিসিভ করা
         channel.subscribe('field-report', function(message) {
             const data = message.data;
             const deviceName = data.agent; 
@@ -214,14 +211,13 @@
             feed.insertBefore(newReport, feed.firstChild);
         });
 
-        // ২. বেস থেকে এজেন্টের উদ্দেশ্যে মেসেজ বা অর্ডার পাঠানো
+        // বেস থেকে এজেন্টের কাছে অর্ডার পাঠানো
         function sendBaseDirective() {
             const baseMsg = document.getElementById('base-message').value;
             const txStatus = document.getElementById('tx-status');
             if(!baseMsg) return;
 
             txStatus.innerText = "BROADCASTING ORDER...";
-            
             channel.publish('base-directive', {
                 commander: "Commando (Base Controller)",
                 order: baseMsg
