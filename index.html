@@ -3,142 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commando 71 - Tactical Dashboard</title>
+    <title>Base Command Dashboard</title>
+    <!-- Ably CDN -->
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
         body {
-            background-color: #0b0f0c;
+            background-color: #060a06;
+            background-image: 
+                radial-gradient(circle, rgba(16, 36, 16, 0.4) 0%, rgba(6, 10, 6, 0.9) 80%),
+                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
             color: #4af626;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', monospace;
             margin: 0;
             padding: 20px;
-        }
-
-        h1, h2, h3 {
-            color: #55da35;
-            text-shadow: 0 0 5px rgba(74, 246, 38, 0.5);
-            text-transform: uppercase;
-        }
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .sidebar {
-            background-color: #121813;
-            border: 2px solid #326922;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(50, 105, 34, 0.3);
-        }
-        .main-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .panel-box {
-            background-color: #121813;
-            border: 2px solid #326922;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(50, 105, 34, 0.3);
+            overflow-x: hidden;
             position: relative;
         }
-        .panel-box::before {
-            content: "[ONLINE]";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 0.8rem;
-            color: #888;
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%; 
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/black-thread.png'), 
+                        url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_blank_black_white.svg');
+            background-size: auto, contain;
+            background-repeat: repeat, repeat-x;
+            opacity: 0.07; 
+            z-index: -1;
+            animation: moveMap 60s linear infinite;
+        }
+        @keyframes moveMap {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
         }
 
-        hr {
-            border: 0;
-            border-top: 1px dashed #326922;
-            margin-bottom: 15px;
+        h1, h2, h3 { color: #55da35; margin-top: 0; text-shadow: 0 0 8px rgba(74, 246, 38, 0.6); }
+        header { text-align: center; border-bottom: 2px solid #326922; padding-bottom: 10px; margin-bottom: 20px; background: rgba(8, 12, 8, 0.85); }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
         }
-        .status-active {
-            color: #ff3333;
-            font-weight: bold;
-            animation: blink 1.5s infinite;
+        .box {
+            background-color: rgba(13, 22, 13, 0.85);
+            border: 2px solid #326922;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(50, 105, 34, 0.6);
+            height: 220px;
+            overflow-y: auto;
+            backdrop-filter: blur(3px); /* গ্লাস-মিলিটারি ইফেক্ট */
         }
-
-        @keyframes blink {
-            50% { opacity: 0.3; }
-        }
-        @media screen and (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .dashboard-container {
-                grid-template-columns: 1fr; 
-                gap: 15px;
-            }
-
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            .sidebar, .panel-box {
-                width: 100%;
-                box-sizing: border-box;
-            }
-            h1 {
-                font-size: 1.6rem;
-                text-align: center;
-            }
-            h2, h3 {
-                font-size: 1.2rem;
-            }
-        }
+        
+        .full-width { grid-column: span 3; height: auto; }
+        hr { border: 0; border-top: 1px dashed #326922; margin: 10px 0; }
+        .blink { animation: blinker 1.5s linear infinite; color: red; font-weight: bold; }
+        @keyframes blinker { 50% { opacity: 0; } }
+        .log-entry { font-size: 0.85rem; margin-bottom: 5px; color: #88ff88; }
+        .agent-status { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .online { color: #4af626; }
+        .offline { color: #ff3333; }
     </style>
 </head>
 <body>
 
-    <header style="text-align: center; margin-bottom: 30px;">
-        <h1>⚡ COMMANDO 71 TACTICAL INTERFACE ⚡</h1>
-        <p>SYSTEM STATUS: ACTIVE | SECURITY LEVEL: ALPHA</p>
+    <header>
+        <h1>⚡ BASE COMMAND CONTROL STATION ⚡</h1>
+        <div id="live-clock" style="color: #ffff00; font-weight: bold;">TIMESTAMP: LOADING...</div>
     </header>
 
-    <div class="dashboard-container">
-        
-        <aside class="sidebar">
-            <h3>📂 NAVIGATION</h3>
+    <div class="grid-container">
+        <!-- 1. Mission Overview -->
+        <div class="box">
+            <h3>🎯 Mission Overview</h3>
             <hr>
-            <p>🪖 > HQ COMMAND</p>
-            <p>🛰️ > SATELLITE</p>
-            <p>🔒 > ENCRYPTION</p>
-            <p>⚙️ > SETTINGS</p>
-        </aside>
+            <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
+            <p><strong>THREAT LEVEL:</strong> <span class="blink">CRITICAL</span></p>
+            <p><strong>SECTOR:</strong> BHAWAL-71</p>
+        </div>
 
-        <main class="main-content">
-            
-            <div class="panel-box">
-                <h3>🎯 MISSION STATUS</h3>
-                <hr>
-                <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
-                <p><strong>THREAT LEVEL:</strong> <span class="status-active">CRITICAL</span></p>
-                <p><strong>TEAM CODE:</strong> ALPHA-71</p>
+        <!-- 2. Active Agents -->
+        <div class="box">
+            <h3>👥 Active Agents</h3>
+            <hr>
+            <div class="agent-status"><span>• Operator Plabon</span> <span class="online">● ONLINE</span></div>
+            <div class="agent-status"><span>• Operator Bon</span> <span class="online">● ONLINE</span></div>
+            <div class="agent-status"><span>• Support Unit</span> <span class="offline">○ OFFLINE</span></div>
+        </div>
+
+        <!-- 3. System Health & Announcements -->
+        <div class="box">
+            <h3>🖥️ System Health & Alerts</h3>
+            <hr>
+            <p>💾 Main Core: 94% Operational</p>
+            <p>📡 Uplink: SECURE (WebSockets Active)</p>
+            <p style="color: cyan;">📢 <strong>ANNOUNCEMENT:</strong> Check briefing files before deployment.</p>
+        </div>
+
+        <!-- 4. Incoming Live Messages & Incident Reports -->
+        <div class="box full-width" style="height: 280px;">
+            <h3>🚨 Incoming Messages & Field Incident Reports</h3>
+            <hr>
+            <div id="incident-feed">
+                <div class="log-entry">[SYSTEM] Awaiting secure reports from field agents...</div>
             </div>
+        </div>
 
-            <div class="panel-box">
-                <h3>📜 SYSTEM LOGS</h3>
-                <hr>
-                <p>[23:00] Firewall operational.</p>
-                <p>[23:12] Uplink established with Bhawal base.</p>
-                <p>[23:25] Encrypted handshake successful.</p>
+        <!-- 5. Task Management & Calendar -->
+        <div class="box">
+            <h3>📋 Task Management & Schedule</h3>
+            <hr>
+            <p>[ ] Decrypt Alpha Packet (Priority 1)</p>
+            <p>[ ] Sync logs with Bhawal Base</p>
+            <p>📅 <strong>Next Sync:</strong> 23:45 ZULU</p>
+        </div>
+
+        <!-- 6. Secure File Library -->
+        <div class="box">
+            <h3>📁 Secure File Library</h3>
+            <hr>
+            <p>📄 tactical_map_v2.enc</p>
+            <p>📄 cipher_key_july26.dat</p>
+            <p>📄 coordination_briefing.pdf</p>
+        </div>
+
+        <!-- 7. Audit Logs -->
+        <div class="box">
+            <h3>📜 System Audit Logs</h3>
+            <hr>
+            <div id="audit-logs">
+                <div class="log-entry">[00:01] Dashboard initialized.</div>
+                <div class="log-entry">[00:05] WebSocket gateway connected.</div>
             </div>
-
-            <div class="panel-box">
-                <h3>👥 SQUAD OVERVIEW</h3>
-                <hr>
-                <p>• Operator Plabon - <strong>READY</strong></p>
-                <p>• Operator Bon - <strong>MSS FIELD COORD</strong></p>
-                <p>• Support Unit - <strong>STANDBY</strong></p>
-            </div>
-
-        </main>
+        </div>
     </div>
 
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = `TIMESTAMP: ${now.toUTCString().replace('GMT', 'ZULU')}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // ======= ABLY REAL-TIME SETUP =======
+        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY'); // এখানে আপনার Ably API Key বসাবেন
+        const channel = ably.channels.get('tactical-ops');
+        channel.subscribe('field-report', function(message) {
+            const data = message.data;
+            const timestamp = new Date().toLocaleTimeString();
+            const feed = document.getElementById('incident-feed');
+            const newReport = document.createElement('div');
+            newReport.className = 'log-entry';
+            newReport.style.color = '#ffff00';
+            newReport.innerHTML = `<strong>[${timestamp}] FROM ${data.agent}:</strong> Status: ${data.status} | Msg: "${data.msg}"`;
+            feed.insertBefore(newReport, feed.firstChild);
+            const audit = document.getElementById('audit-logs');
+            const newAudit = document.createElement('div');
+            newAudit.className = 'log-entry';
+            newAudit.innerText = `[${timestamp}] Data payload received from ${data.agent}`;
+            audit.insertBefore(newAudit, audit.firstChild);
+        });
+    </script>
 </body>
 </html>
