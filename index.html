@@ -7,60 +7,96 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        @keyframes radarScanner { 0% { top: -100%; } 100% { top: 100%; } }
-        .radar-animation { animation: radarScanner 6s linear infinite; }
+        body { background-color: #020502; color: #4af626; font-family: 'Courier New', monospace; background-image: radial-gradient(circle at center, rgba(16, 45, 16, 0.3) 0%, #020502 90%); background-attachment: fixed; }
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
+        /* Radar Overlay */
+        body::after { content: ""; position: fixed; top: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, rgba(74, 246, 38, 0.08) 95%, rgba(74, 246, 38, 0.25) 100%, transparent); z-index: -1; pointer-events: none; animation: radarScanner 6s linear infinite; }
+        @keyframes radarScanner { 0% { top: -100%; } 100% { top: 100%; } }
     </style>
 </head>
-<body class="bg-[#020502] text-[#4af626] font-mono min-h-screen p-5 overflow-x-hidden relative selection:bg-green-900">
+<body class="p-5 min-h-screen overflow-x-hidden">
 
-    <div id="login-overlay" class="fixed inset-0 bg-[#020502] z-50 flex flex-col justify-center items-center">
-        <div class="border-2 border-[#4af626] bg-[rgba(4,10,4,0.95)] p-10 text-center shadow-[0_0_30px_rgba(74,246,38,0.35)] max-w-sm w-11/12 backdrop-blur-sm">
-            <h2 class="text-xl mb-5 tracking-widest drop-shadow-[0_0_8px_#4af626]">🔒 SECURE TERMINAL GATEWAY</h2>
-            <input type="password" id="passkey-input" class="w-full bg-black border border-[#4af626] p-3 text-center text-[#4af626] mb-5 tracking-[0.2em] outline-none focus:shadow-[0_0_15px_rgba(74,246,38,0.7)]" placeholder="••••••••">
-            <button onclick="verifyAccess()" class="w-full bg-[#4af626] text-black font-bold py-3 hover:bg-[#39c21e] hover:shadow-[0_0_20px_#4af626] transition-all">AUTHORIZE UPLINK</button>
-            <div id="login-error" class="text-red-500 mt-4 font-bold hidden">⚠️ ACCESS DENIED</div>
+    <!-- Login -->
+    <div id="login-overlay" class="fixed inset-0 z-50 bg-[#020502] flex flex-col justify-center items-center">
+        <div class="border-2 border-[#4af626] bg-[rgba(4,10,4,0.95)] p-10 text-center w-80 backdrop-blur-sm">
+            <h2 class="text-xl mb-5 tracking-widest text-[#4af626]">🔒 SECURE TERMINAL</h2>
+            <input type="password" id="passkey-input" class="w-full bg-black border border-[#4af626] p-2 mb-4 text-center text-[#4af626]" placeholder="••••••••">
+            <button onclick="verifyAccess()" class="w-full bg-[#4af626] text-black font-bold py-2 uppercase">Authorize</button>
+            <div id="login-error" class="text-red-500 mt-4 hidden">⚠️ ACCESS DENIED</div>
         </div>
     </div>
 
-    <div id="dashboard-content" class="hidden">
-        <header class="text-center border-b border-[#326922] pb-4 mb-5 bg-[rgba(8,14,8,0.85)] backdrop-blur-sm">
-            <h1 class="text-2xl font-bold drop-shadow-[0_0_8px_rgba(74,246,38,0.6)]">⚡ BASE COMMAND CONTROL STATION ⚡</h1>
-            <p class="text-sm text-gray-500 mt-1">STATION OPERATOR: <strong>COMMANDO</strong></p>
+    <!-- Dashboard -->
+    <div id="dashboard-content" class="hidden max-w-6xl mx-auto">
+        <header class="text-center mb-8 border-b border-[#326922] pb-4">
+            <h1 class="text-3xl font-bold text-[#55da35]">⚡ BASE COMMAND CONTROL STATION ⚡</h1>
             <div id="live-clock" class="text-yellow-400 font-bold mt-2">TIMESTAMP: LOADING...</div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div class="bg-[rgba(6,14,6,0.88)] border-2 border-[#326922] p-4 shadow-[0_0_15px_rgba(50,105,34,0.4)] h-56 overflow-y-auto backdrop-blur-sm">
-                <h3 class="text-[#55da35] mb-2 font-bold">🎯 Mission Overview</h3>
-                <hr class="border-t border-dashed border-[#326922] my-2">
-                <p><strong>CURRENT OBJ:</strong> SECURE THE PERIMETER</p>
-                <p><strong>THREAT LEVEL:</strong> <span class="blink text-red-500">CRITICAL</span></p>
+            <!-- Box 1 -->
+            <div class="bg-[#060e06] border-2 border-[#326922] p-4 h-56 overflow-y-auto">
+                <h3 class="font-bold mb-2">🎯 Mission Overview</h3>
+                <p><strong>SECTOR:</strong> <span id="current-sector">LOCATING...</span></p>
+                <p><strong>THREAT:</strong> <span class="blink text-red-500">CRITICAL</span></p>
             </div>
-
-            <div class="bg-[rgba(6,14,6,0.88)] border-2 border-[#326922] p-4 shadow-[0_0_15px_rgba(50,105,34,0.4)] h-56 overflow-y-auto">
-                <h3 class="text-[#55da35] mb-2 font-bold">👥 Comms Node Fleet</h3>
-                <hr class="border-t border-dashed border-[#326922] my-2">
-                <div id="agent-list-container" class="text-sm"></div>
+            <!-- Box 2 -->
+            <div class="bg-[#060e06] border-2 border-[#326922] p-4 h-56">
+                <h3 class="font-bold mb-2">👥 Comms Node Fleet</h3>
+                <div id="agent-list-container" class="text-sm">
+                    <div class="flex justify-between"><span>• Commando</span> <span class="text-green-500">ONLINE</span></div>
+                </div>
             </div>
-            
-            <div class="bg-[rgba(6,14,6,0.88)] border-2 border-[#326922] p-4 shadow-[0_0_15px_rgba(50,105,34,0.4)] h-56 overflow-y-auto">
-                <h3 class="text-[#55da35] mb-2 font-bold">🖥️ System Health</h3>
-                <hr class="border-t border-dashed border-[#326922] my-2">
-                <p>💾 Main Core: 94% Operational</p>
+            <!-- Box 3 -->
+            <div class="bg-[#060e06] border-2 border-[#326922] p-4 h-56">
+                <h3 class="font-bold mb-2">📜 System Audit</h3>
+                <div id="audit-logs" class="text-xs"></div>
+            </div>
+            <!-- Chatbox -->
+            <div class="col-span-1 md:col-span-3 bg-[#060e06] border-2 border-[#326922] p-4">
+                <h3 class="font-bold mb-2">🚨 Incident Reports</h3>
+                <div id="incident-feed" class="h-40 overflow-y-auto mb-4 bg-black p-2"></div>
+                <div class="flex gap-2">
+                    <input type="text" id="base-message" class="flex-grow bg-[#080e08] border border-[#4af626] p-2 text-[#4af626]" placeholder="Transmit Directive...">
+                    <button onclick="sendBaseDirective()" class="bg-[#102d10] border border-[#4af626] px-4 font-bold">TRANSMIT</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // আপনার আগের ফাংশনগুলো এখানে যথারীতি বসিয়ে দিন...
+        // সব ফাংশনালিটি আগের মতোই এখানে বসানো হলো
         function verifyAccess() {
             if (document.getElementById('passkey-input').value === 'Commando71') {
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('dashboard-content').classList.remove('hidden');
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                startEngine();
+            } else { document.getElementById('login-error').style.display = 'block'; }
+        }
+
+        function startEngine() {
+            setInterval(() => {
+                document.getElementById('live-clock').innerText = `TIMESTAMP: ${new Date().toLocaleString()}`;
+            }, 1000);
+            detectLocation();
+            // initAblyUplink(); // আপনার API Key থাকলে এটি আন-কমেন্ট করবেন
+        }
+
+        function detectLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    document.getElementById('current-sector').innerText = `${pos.coords.latitude.toFixed(2)}N, ${pos.coords.longitude.toFixed(2)}E`;
+                });
+            }
+        }
+
+        function sendBaseDirective() {
+            const msg = document.getElementById('base-message').value;
+            const feed = document.getElementById('incident-feed');
+            if(msg) {
+                feed.innerHTML += `<div class="text-cyan-400 text-sm">[${new Date().toLocaleTimeString()}] SENT: ${msg}</div>`;
+                document.getElementById('base-message').value = '';
             }
         }
     </script>
