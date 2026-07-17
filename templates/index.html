@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>COMMANDO 71 // BASE STATION</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #000000; color: #00ff00; font-family: 'Courier New', monospace; overflow: hidden; margin: 0; }
+        .glow { text-shadow: 0 0 8px #00ff00; }
+        .map-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg'); background-size: cover; opacity: 0.15; z-index: -1; filter: grayscale(100%) invert(1) hue-rotate(90deg); }
+        @keyframes sweep { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .radar-sweep { animation: sweep 4s linear infinite; }
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .access-denied { border-color: #ff0000 !important; box-shadow: 0 0 15px #ff0000 !important; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="h-screen p-6 text-[#00ff00]">
+
+    <div class="map-bg"></div>
+
+    <div id="password-screen" class="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div id="auth-box" class="border border-[#00ff00] p-8 bg-black text-center w-80">
+            <h2 class="text-xl font-bold mb-6 glow">SECURITY</h2>
+            <input type="password" id="pass-input" class="bg-black border border-[#00ff00] w-full p-2 mb-4 text-center outline-none">
+            <button onclick="verifyPassword()" class="bg-[#00ff00] text-black font-bold px-6 py-2 w-full">ACCESS SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="hidden">
+        <header class="flex justify-between border-b border-[#00ff00] pb-2 mb-6">
+            <h1 class="text-3xl font-bold glow">COMMANDO 71 // BASE STATION</h1>
+            <div id="clock" class="text-3xl font-bold glow">00:00:00</div>
+        </header>
+
+        <main class="grid grid-cols-12 gap-6 h-[75vh]">
+            
+            <div class="col-span-6 border border-[#00ff00] p-4 flex flex-col bg-black/60">
+                <h2 class="text-xl mb-4 glow">💬 COMM LINK</h2>
+                <div id="chat-window" class="flex-grow overflow-y-auto text-sm mb-4"><p>> Initialized.</p></div>
+                <div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="CMD..." class="flex-grow bg-black border border-[#00ff00] p-2 outline-none text-xs">
+                    <button onclick="sendMessage()" class="bg-[#00ff00] text-black px-4 font-bold">SEND</button>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <input type="file" id="file-input" class="hidden" onchange="handleFile(this)">
+                    <label for="file-input" class="cursor-pointer bg-[#00ff00] text-black px-2 py-1 text-xs font-bold w-full text-center">BROWSE</label>
+                    <button onclick="uploadFile()" class="bg-[#00ff00] text-black px-4 font-bold text-xs">UPLOAD</button>
+                </div>
+            </div>
+
+            <div class="col-span-3 flex flex-col gap-6">
+                <div class="border border-[#00ff00] p-4 bg-black/60 flex-grow">
+                    <h2 class="text-xl mb-4 glow">👥 AGENT FLEET</h2>
+                    <ul class="text-sm space-y-2">
+                        <li>• Commander <span class="text-green-500 text-xs">● ONLINE</span></li>
+                        <li>• Agent-1 <span class="text-red-500 text-xs">○ OFFLINE</span></li>
+                        <li>• Agent-2 <span class="text-yellow-500 text-xs">○ STANDBY</span></li>
+                    </ul>
+                </div>
+                <div class="border border-[#00ff00] p-4 bg-black/60">
+                    <h2 class="text-xl mb-4 glow">🎯 MISSION</h2>
+                    <p class="text-yellow text-sm">OBJ: SECURE PERIMETER</p>
+                </div>
+            </div>
+
+            <div class="col-span-3 flex flex-col gap-4">
+                <div class="border border-[#00ff00] p-4 bg-black/60">
+                    <h2 class="text-xl mb-2 glow">📜 TACTICAL LOGS</h2>
+                    <div id="location-display" class="text-xs mb-2">> GPS: LOADING...</div>
+                    <!-- Data Status এখান থেকে আপডেট হবে -->
+                    <div id="data" class="text-xs text-yellow-400 font-bold mt-2">> WAITING FOR DATA...</div>
+                </div>
+                <div class="border border-[#00ff00] h-32 flex items-center justify-center bg-black/60">
+                    <div class="w-20 h-20 border border-[#00ff00] rounded-full relative flex items-center justify-center">
+                        <div class="radar-sweep absolute w-10 h-[1px] bg-[#00ff00] origin-right right-1/2 top-1/2"></div>
+                    </div>
+                </div>
+                <div id="weather-box" class="border border-[#00ff00] p-4 bg-black/60 text-center">
+                    <h2 class="text-xl mb-2 glow">☁️ WEATHER</h2>
+                    <div id="weather-display" class="text-xs">> LOADING...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ডেটা আপডেট করার ফাংশন
+        function updateData() {
+            fetch('/get-data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('data').innerText = "> " + data.data;
+                })
+                .catch(() => {
+                    document.getElementById('data').innerText = "> CONNECTION LOST";
+                });
+        }
+        // প্রতি ২ সেকেন্ডে সার্ভার থেকে ডেটা রিফ্রেশ করবে
+        setInterval(updateData, 2000);
+
+        window.onload = () => document.getElementById('pass-input').focus();
+        document.getElementById("pass-input").addEventListener("keypress", (e) => { if(e.key === "Enter") verifyPassword(); });
+
+        function verifyPassword() {
+            if (document.getElementById('pass-input').value === "Commando71") {
+                document.getElementById('password-screen').style.display = 'none';
+                document.getElementById('main-dashboard').classList.remove('hidden');
+            } else {
+                const authBox = document.getElementById('auth-box');
+                authBox.classList.add("shake", "access-denied");
+                setTimeout(() => authBox.classList.remove("shake", "access-denied"), 500);
+            }
+        }
+
+        // বাকি ফাংশনগুলো...
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            if (input.value.trim() !== "") {
+                document.getElementById('chat-window').innerHTML += `<p>> ${input.value}</p>`;
+                input.value = "";
+            }
+        }
+
+        function handleFile(input) {
+            if (input.files.length > 0) document.getElementById('chat-window').innerHTML += `<p style="color: yellow;">> Ready to upload: ${input.files[0].name}</p>`;
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('file-input');
+            if (fileInput.files.length > 0) {
+                document.getElementById('chat-window').innerHTML += `<p>> Uploading: ${fileInput.files[0].name}...</p>`;
+                fileInput.value = "";
+            } else { alert("SELECT A FILE FIRST"); }
+        }
+
+        // GPS ও ওয়েদার...
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude.toFixed(4);
+                const lon = pos.coords.longitude.toFixed(4);
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                const data = await res.json();
+                document.getElementById('location-display').innerText = `> GPS: ${lat}, ${lon}\n> LOC: ${data.address.suburb || data.address.city || "Unknown"}`;
+                fetchWeather(lat, lon);
+            });
+        }
+
+        async function fetchWeather(lat, lon) {
+            const apiKey = '41c95bab10a3004ea762a197a07d01c4';
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`);
+                const data = await res.json();
+                document.getElementById('weather-display').innerText = `> TEMP: ${data.main.temp.toFixed(1)}°C\n> COND: ${data.weather[0].description.toUpperCase()}`;
+            } catch { document.getElementById('weather-display').innerText = `> WEATHER: UNAVAILABLE`; }
+        }
+        
+        setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'), 1000);
+    </script>
+</body>
+</html>
